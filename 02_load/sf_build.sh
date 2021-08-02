@@ -6,6 +6,11 @@
 #
 # Copyright 2017-2018 MonetDB Solutions B.V.
 
+# Arguments:
+# $1 - scale factor as "SF-N"
+# $2 - port number
+# $3 - worker_id"
+
 TIMEFORMAT="%R"
 if [ -z "$2" ]; then
   port=50000
@@ -22,7 +27,7 @@ date
 
 # Generate the counts file if it does not exist or if its size is zero
 if [ ! -s $1.counts ]; then
-  wc -l $PWD/$1/data/* | grep -v total | sort -n > $1.counts
+  wc -l $PWD/$1/data/$3/* | grep -v total | sort -n > $1.counts
 fi
 
 # Generate the copy into file
@@ -50,3 +55,11 @@ else
     echo "Something went wrong. Review and then delete ${verify_file}"
     exit 1
 fi
+
+echo "Renaming tables"
+awk -f rename.awk $1.counts > $1.rename
+sed -i "s/_NUMBER/_$3/" $1.rename
+
+time mclient -d "$1" -p "$port" -ei $1.rename
+rm -rf $1.rename
+date
