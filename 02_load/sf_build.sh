@@ -43,9 +43,9 @@ date
 # TODO: This breaks in a cluster context
 #   Not all partitions of a table may have all their primary keys... thus adding a foreign key constraint might break
 #   since it can't find the primary key in the partition of the table that is right next to it
-echo "Adding constraints (only primary key)"
-time mclient -d "$1" -p "$port" -ei tpch_alter.sql
-date
+#echo "Adding constraints (only primary key)"
+#time mclient -d "$1" -p "$port" -ei tpch_alter.sql
+#date
 
 echo "Verifying: all the numbers should be zero"
 verify_file=/tmp/verify_load_new  # TODO: make this a tempfile
