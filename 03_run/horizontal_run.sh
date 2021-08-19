@@ -91,6 +91,11 @@ today=$(date +%Y-%m-%d)
 dir=results/"$today_$dbname_$tag"
 mkdir -p "$dir"
 
+# setup location to dump results
+rm -rf $dbname
+mkdir -p $dbname
+screen -dmS ps-screen stethoscope -d "$dbname" -o $dbname/all.log
+
 echo "# Database,Tag,Query,Min,Max,Average" | tee -a "$output"
 for i in $(ls ??.sql)
 do
@@ -100,6 +105,7 @@ do
     # iostat -t -m > /tmp/iostat
     avg=0
 
+
     for j in $(seq 1 $nruns)
     do
         #s=$(date +%s.%N)
@@ -107,21 +113,23 @@ do
         mclient -d "$dbname" -p "$port" -f raw -w 80 -i < "/tmp/$i" 2>&1 >/dev/null
         #x=$(date +%s.%N)
 		x=$(python3 -c 'import time; print(repr(time.time()))')
-        sec=$(python -c "print($x - $s)")
-        avg=$(python -c "print($avg + $sec)")
+        sec=$(python3 -c "print($x - $s)")
+        avg=$(python3 -c "print($avg + $sec)")
         if [ $j == 1 ]; then
             mn=$sec
             mx=$sec
         else
-            mn=$(python -c "print(min($mn, $sec))")
-            mx=$(python -c "print(max($mx, $sec))")
+            mn=$(python3 -c "print(min($mn, $sec))")
+            mx=$(python3 -c "print(max($mx, $sec))")
         fi
     done
-    avg=$(python -c "print($avg/$nruns)")
+    avg=$(python3 -c "print($avg/$nruns)")
     # iostat -t -m >> /tmp/iostat
     # io=$(awk -f sumio.awk /tmp/iostat)
 
     echo "$dbname,$tag,"$(basename $i .sql)",$mn,$mx,$avg" | tee -a "$output"
 done
 
-
+# kill the pystethoscope screen session (and end nicely)
+screen -R -X at "#" stuff $'\003'
+pkill screen || true
