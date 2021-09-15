@@ -146,7 +146,7 @@ echo "Root directory = $root_directory"
 pushd $root_directory
 
 # Generate the data only if you aren't doing a load only
-if [ -z "$load_only"]; then
+if [ -z "$load_only" ]; then
     # Generate the data if the following directory does not exist.
     # TODO: Add a condition about the actual files we need.
     if [ ! -e "$root_directory/02_load/SF-$scale_factor/data" ]; then
@@ -159,8 +159,6 @@ if [ -z "$load_only"]; then
         mv *.tbl "$root_directory/02_load/SF-$scale_factor/data"
         popd
     fi
-
-    pushd 02_load
 
     # We can stop now if we only want to generate the data
     if [ ! -z "$generate_only" ]; then
@@ -175,6 +173,9 @@ user=monetdb
 password=monetdb
 save_history=true
 EOF
+
+# Start loading the data
+pushd 02_load
 
 # Create the database farm
 if [ ! -e "$farm_path" ]; then
