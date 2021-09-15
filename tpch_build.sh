@@ -22,6 +22,9 @@ dry_run=
 # Should we load the data?
 generate_only=
 
+# Load only (skip the generate step)?
+load_only=
+
 # show commands as they are executed
 verbose=
 
@@ -41,6 +44,8 @@ usage() {
     echo "                                         just print the start up command."
     echo "  -g, --generate-only                    Only generate the data."
     echo "                                         Don't load it."
+    echo "  -l, --load-only                        Only load the data."
+    echo "                                         Don't generate it."
 }
 
 server_startup_command() {
@@ -84,6 +89,10 @@ while [ "$#" -gt 0 ]; do
 	    generate_only="true"
 	    shift
 	    ;;
+	-l|--load-only)
+	    load_only="true"
+	    shift
+        ;;
 	-v|--verbose)
 	    verbose="true"
 	    shift
@@ -136,33 +145,36 @@ echo "Root directory = $root_directory"
 # Go to the scripts root directory
 pushd $root_directory
 
+# Generate the data only if you aren't doing a load only
+if [ -z "$load_only"]; then
+    # Generate the data if the following directory does not exist.
+    # TODO: Add a condition about the actual files we need.
+    if [ ! -e "$root_directory/02_load/SF-$scale_factor/data" ]; then
+        pushd 01_build/dbgen
+        make
+        # Create the data for the scale factor
+        ./dbgen -vf -s "$sf"
+
+        mkdir -p "$root_directory/02_load/SF-$scale_factor/data"
+        mv *.tbl "$root_directory/02_load/SF-$scale_factor/data"
+        popd
+    fi
+
+    pushd 02_load
+
+    # We can stop now if we only want to generate the data
+    if [ ! -z "$generate_only" ]; then
+        echo "Data set generated in $root_directory/02_load/SF-$scale_factor/data"
+        exit 0
+    fi
+fi
+
 # Add dot monetdb file for permissions
 test -f $HOME/.monetdb || cat << EOF > $HOME/.monetdb
 user=monetdb
 password=monetdb
 save_history=true
 EOF
-
-# Generate the data if the following directory does not exist.
-# TODO: Add a condition about the actual files we need.
-if [ ! -e "$root_directory/02_load/SF-$scale_factor/data" ]; then
-    pushd 01_build/dbgen
-    make
-    # Create the data for the scale factor
-    ./dbgen -vf -s "$sf"
-
-    mkdir -p "$root_directory/02_load/SF-$scale_factor/data"
-    mv *.tbl "$root_directory/02_load/SF-$scale_factor/data"
-    popd
-fi
-
-pushd 02_load
-
-# We can stop now if we only want to generate the data
-if [ ! -z "$generate_only" ]; then
-    echo "Data set generated in $root_directory/02_load/SF-$scale_factor/data"
-    exit 0
-fi
 
 # Create the database farm
 if [ ! -e "$farm_path" ]; then
