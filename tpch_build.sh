@@ -109,6 +109,10 @@ while [ "$#" -gt 0 ]; do
     esac
 done
 
+if [ ! -z "$verbose" ]; then
+    set -x
+fi
+
 if [ -z "$scale_factor" ]; then
     usage
     exit 1
@@ -126,10 +130,6 @@ fi
 if [ ! -z "$dry_run" ]; then
     server_startup_command
     exit 0
-fi
-
-if [ ! -z "$verbose" ]; then
-    set -x
 fi
 
 # Find the root directory of the TPC-H scripts
