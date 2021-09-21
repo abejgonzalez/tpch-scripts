@@ -91,10 +91,11 @@ today=$(date +%Y-%m-%d)
 dir=results/"$today_$dbname_$tag"
 mkdir -p "$dir"
 
-# setup location to dump results
-rm -rf $dbname
-mkdir -p $dbname
-screen -dmS ps-screen stethoscope -d "$dbname" -o $dbname/all.log
+# AJG: Use the start_server script
+## setup location to dump results
+#rm -rf $dbname
+#mkdir -p $dbname
+#screen -dmS ps-screen stethoscope -d "$dbname" -o $dbname/all.log
 
 echo "# Database,Tag,Query,Min,Max,Average" | tee -a "$output"
 for i in $(ls ??.sql)
@@ -130,6 +131,7 @@ do
     echo "$dbname,$tag,"$(basename $i .sql)",$mn,$mx,$avg" | tee -a "$output"
 done
 
-# kill the pystethoscope screen session (and end nicely)
-screen -R -X at "#" stuff $'\003'
-pkill screen || true
+# AJG: Use the start_server script
+## kill the pystethoscope screen session (and end nicely)
+#screen -R -X at "#" stuff $'\003'
+#pkill screen || true

@@ -93,9 +93,9 @@ if [ -e "$farm/$db/.vaultkey" ]; then
 fi
 
 if [ -z "$prefix_cmd" ]; then
-    cmdstr="mserver5 --dbpath=$farm/$db $vault_arg --daemon=yes $arg"
+    cmdstr="mserver5 --dbpath=$farm/$db $vault_arg $arg"
 else
-    cmdstr="$prefix_cmd mserver5 --dbpath=$farm/$db $vault_arg --daemon=yes $arg"
+    cmdstr="$prefix_cmd mserver5 --dbpath=$farm/$db $vault_arg $arg"
 fi
 if [ -z "$dry_run" ]; then
     ($cmdstr& echo $! > /tmp/mserver.pid)
@@ -109,10 +109,11 @@ if [ -z "$logdir" ]; then
         mkdir "$logdir"
     fi
 fi
-log_fn=$(echo "$cmdstr" | tr -s ' ' '_' | tr '/' '_')
+#log_fn=$(echo "$cmdstr" | tr -s ' ' '_' | tr '/' '_')
+log_fn=stethoscope_log
 log_fn="$log_fn"_$(date +%s)
 if [ "$start_stethoscope" = "1" ]; then
-    cmdstr="stethoscope -d $db -j -o $logdir/$log_fn"
+    cmdstr="stethoscope -d $db -o $logdir/$log_fn"
     if [ -z "$dry_run" ]; then
         touch "$logdir/$log_fn"
         ($cmdstr& echo $! > /tmp/stethoscope.pid)
